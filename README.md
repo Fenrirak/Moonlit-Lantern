@@ -10,7 +10,7 @@ The phone is the narrator. It deals roles privately, then runs each night by vis
 
 ## Home screen icon
 
-The page ships with a crescent-moon icon. Keep `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` and `manifest.webmanifest` in the same folder as `index.html` so "Add to Home Screen" on iPhone and Android picks them up.
+The page ships with a crescent-moon icon. Keep `apple-touch-icon.png`, `icon-192.webp`, `icon-512.webp`, `icon-maskable-512.webp` and `manifest.webmanifest` in the same folder as `index.html` so "Add to Home Screen" on iPhone and Android picks them up.
 
 ## Run locally
 
