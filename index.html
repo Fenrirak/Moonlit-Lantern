@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moonlit Lantern</title>
+<meta name="description" content="Pass-and-play party games for one phone: Mafia and Imposter.">
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1c1b1a;--mu:#6d6a64;--ac:#3b3bd9;--on:#fff;--bd:#dcd8cf;--bad:#c23a2e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111113;--card:#1b1b1f;--tx:#f1efe9;--mu:#a09d96;--ac:#9a9aff;--on:#111113;--bd:#303036;--bad:#ff7a6e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111113;--card:#1b1b1f;--tx:#f1efe9;--mu:#a09d96;--ac:#9a9aff;--on:#111113;--bd:#303036;--bad:#ff7a6e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh}
+.app{max-width:520px;margin:0 auto;padding:16px 16px 40px}
+header{display:flex;justify-content:space-between;align-items:center;padding:4px 0 18px}
+header b{font-size:18px;letter-spacing:-.01em}
+h1,h2{margin:0 0 6px;letter-spacing:-.02em;line-height:1.15}
+h1{font-size:34px}h2{font-size:28px}
+p{margin:0 0 14px;color:var(--mu)}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);border-radius:14px;min-height:48px;padding:10px 16px;transition:transform .06s}
+button:active{transform:scale(.98)}
+button:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.b{width:100%;background:var(--ac);color:var(--on);border-color:var(--ac);font-weight:600;margin-top:10px}
+.s{width:100%;margin-top:10px}
+.lk{min-height:40px;border-radius:999px;font-size:14px;padding:6px 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:12px}
+.big{display:block;width:100%;text-align:left;padding:22px 20px;margin-bottom:12px;border-radius:20px}
+.big strong{display:block;font-size:24px;letter-spacing:-.02em}
+.big span{color:var(--mu)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.row:last-child{border-bottom:0}
+.row small{display:block;color:var(--mu);font-size:13px;line-height:1.3}
+.st{display:flex;align-items:center;gap:6px}
+.st button{width:44px;min-height:44px;padding:0;font-size:22px;border-radius:12px}
+.st span{min-width:34px;text-align:center;font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:12px 0}
+.p.on,.chip.on{background:var(--ac);color:var(--on);border-color:var(--ac);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border-radius:999px}
+.err{color:var(--bad);font-weight:600;margin:12px 0 0}
+.reveal{text-align:center;padding:40px 16px}
+.word{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:8px 0 12px;word-break:break-word}
+.res{font-size:20px;color:var(--tx);font-weight:600}
+.tag{color:var(--mu);font-size:14px}
+.mt{margin-top:22px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><b>Moonlit Lantern</b><button class="lk" data-a="th" id="th">Dark mode</button></header>
+<main id="m"></main>
+</div>
+<script>
+const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),pn=i=>'Player '+(i+1),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const RK=['mafia','doctor','crazy','officer','cupid'];
+const RN={mafia:'Mafia',doctor:'Doctor',crazy:'Crazy Doctor',officer:'Officer',cupid:'Cupid',innocent:'Innocent'};
+const RD={mafia:'Each night every mafia member kills one player of their own choosing. Stay hidden.',doctor:'Each night you save one player from the mafia. You may save yourself.',crazy:'Each night you give one player a tea and choose if it is good (protects them) or bad (kills them). A doctor's save blocks a bad tea.',officer:'Each night you investigate one player and learn if they are mafia.',cupid:'On the first night you link two players as lovers. If one dies, the other dies too.',innocent:'You have no ability. Work out who the mafia are and vote them out.'};
+const SD={cupid:['Cupid','point to the two players who will become lovers.',2],mafia:['Mafia member','point to one player to kill. Each mafia member gets their own kill.',1],doctor:['Doctor','point to one player to save. They may save themselves.',1],crazy:['Crazy Doctor','point to one player to give a tea to.',1],officer:['Officer','point to one player to investigate.',1]};
+const GN={nz:'NZ common facts',obj:'Objects',food:'Foods',ani:'Animals',pla:'Places'};
+const W={
+nz:['Haka|Dance','Pavlova|Dessert','Kiwi|Bird','Rotorua|Geothermal','Hokey Pokey|Crunchy','Jandals|Footwear','Pōhutukawa|Tree','Waitangi|Treaty','Mount Cook|Peak','Hāngī|Feast','All Blacks|Team','Sauvignon Blanc|Vineyard','Fiordland|Scenery','Tūī|Singer','Bungy|Jump','Marmite|Spread'],
+obj:['Umbrella|Rain','Scissors|Cut','Toothbrush|Morning','Backpack|Carry','Candle|Flame','Mirror|Reflection','Kettle|Boil','Clock|Time','Ladder|Climb','Pillow|Soft','Wallet|Money','Key|Lock','Headphones|Music','Lamp|Light','Stapler|Paper','Suitcase|Travel'],
+food:['Pizza|Slice','Sushi|Rice','Pancakes|Breakfast','Banana|Yellow','Chocolate|Sweet','Popcorn|Cinema','Spaghetti|Italian','Burger|Bun','Avocado|Green','Curry|Spicy','Cheese|Dairy','Watermelon|Summer','Fries|Salty','Dumplings|Folded','Ice cream|Cold','Toast|Crunchy'],
+ani:['Elephant|Large','Penguin|Cold','Giraffe|Tall','Octopus|Ocean','Kangaroo|Australia','Owl|Night','Dolphin|Smart','Bat|Flying','Shark|Teeth','Camel|Desert','Koala|Sleepy','Hedgehog|Spiky','Rabbit|Fluffy','Frog|Pond','Tiger|Stripes','Horse|Ride'],
+pla:['Airport|Travel','Library|Quiet','Beach|Sand','Hospital|Doctors','School|Learning','Supermarket|Shopping','Zoo|Visit','Cinema|Dark','Museum|History','Bakery|Smell','Gym|Sweat','Farm|Rural','Lighthouse|Coast','Castle|Old','Volcano|Hot','Playground|Kids']};
+let view='home',M={p:5,c:{mafia:1,doctor:1,crazy:1,officer:1,cupid:1}},I={p:5,g:{nz:1,obj:1,food:1,ani:1,pla:1},h:1,used:[]},G={};
+const sp=(a,k,v,l)=>`<div class="st"><button aria-label="Decrease ${l}" data-a="${a}" data-k="${k}" data-d="-1">-</button><span>${v}</span><button aria-label="Increase ${l}" data-a="${a}" data-k="${k}" data-d="1">+</button></div>`;
+const grid=()=>'<div class="g">'+G.alive.map((a,i)=>a?`<button class="p${G.sel.includes(i)?' on':''}" data-a="pick" data-i="${i}">${pn(i)}</button>`:'').join('')+'</div>';
+const mErr=()=>{const s=RK.reduce((t,k)=>t+M.c[k],0);return s>M.p?'There are more roles than players.':M.c.mafia<1?'At least 1 mafia is needed.':M.c.mafia>=M.p-M.c.mafia?'Mafia would already match everyone else.':''};
+function steps(){const s=[];if(G.n==1)for(let i=0;i<G.cnt.cupid;i++)s.push('cupid');for(let i=0;i<G.cnt.mafia;i++)s.push('mafia');for(const k of['doctor','crazy','officer'])for(let i=0;i<G.cnt[k];i++)s.push(k);return s}
+function night(){G.ph='step';G.st=steps();G.si=0;nx0();G.pk={save:[],tea:[],kill:[]}}
+function nx0(){G.sel=[];G.tea=null;G.res=null;G.need=G.st&&G.st[G.si]?SD[G.st[G.si]][2]:1}
+function chain(k){const x=[];let c=1;while(c){c=0;G.lv.forEach(([a,b])=>{[[a,b],[b,a]].forEach(([u,v])=>{if((k.has(u)||x.includes(u))&&!k.has(v)&&!x.includes(v)&&G.alive[v]){x.push(v);c=1}})})}return x}
+const nm=a=>a.map(pn).join(' and ');
+function die(k){const x=chain(k);[...k,...x].forEach(i=>G.alive[i]=0);return x}
+function chk(){let m=0,o=0;G.roles.forEach((r,i)=>{if(G.alive[i])r=='mafia'?m++:o++});return m==0?'Town wins':m>=o?'Mafia wins':''}
+function fin(t,nx){G.win=chk();G.msg=t;G.nx=G.win?'over':nx;G.ph='msg'}
+function resolve(){const p=G.pk,pr=new Set(p.save);p.tea.forEach(t=>t.g&&pr.add(t.t));const k=new Set();p.kill.forEach(v=>pr.has(v)||k.add(v));p.tea.forEach(t=>t.g||pr.has(t.t)||k.add(t.t));const d=[...k],x=die(k);
+let t=d.length?nm(d)+(d.length>1?' were':' was')+' killed in the night.':'Nobody was killed in the night.';if(x.length)t+=' '+nm(x)+' died of a broken heart.';fin(t,'day')}
+function start(){const r=[];for(const k of RK)for(let i=0;i<M.c[k];i++)r.push(k);while(r.length<M.p)r.push('innocent');G={roles:shuf(r),alive:Array(M.p).fill(1),lv:[],n:1,ph:'deal',i:0,show:0,cnt:{...M.c},sel:[],need:1};view='mg'}
+function istart(){const pool=Object.keys(I.g).filter(k=>I.g[k]).flatMap(k=>W[k]);let f=pool.filter(x=>!I.used.includes(x));if(!f.length){I.used=[];f=pool}const w=f[rnd(f.length)];I.used.push(w);const[a,b]=w.split('|');G={w:a,h:b,imp:rnd(I.p),i:0,show:0,ph:'deal',first:rnd(I.p)};view='ig'}
+const A={
+th(){const d=dk();document.documentElement.dataset.theme=d?'light':'dark';try{localStorage.setItem('pg-theme',d?'light':'dark')}catch(e){}},
+go(e){view=e.dataset.v},
+mc(e){const k=e.dataset.k,d=+e.dataset.d;k=='p'?M.p=cl(M.p+d,3,20):M.c[k]=cl(M.c[k]+d,0,20)},
+ip(e){I.p=cl(I.p+ +e.dataset.d,3,20)},
+tg(e){I.g[e.dataset.k]=I.g[e.dataset.k]?0:1},
+ht(){I.h=I.h?0:1},
+ms:start,is:istart,
+rv(){G.show=1},
+nxt(){G.show=0;G.i++;if(G.i>=(view=='mg'?G.roles.length:I.p))G.ph=view=='mg'?'nint':'play'},
+nb(){night()},
+pick(e){const i=+e.dataset.i,s=G.sel;if(G.need==1)G.sel=[i];else s.includes(i)?G.sel=s.filter(x=>x!=i):s.length<G.need&&s.push(i)},
+tea(e){G.tea=e.dataset.v=='1'},
+ok(){const r=G.st[G.si],s=G.sel;
+if(r=='cupid'){G.lv.push([s[0],s[1]]);G.res='The lovers are '+nm(s)+'. Wake them so they can see each other, then put them back to sleep.'}
+else if(r=='mafia')G.pk.kill.push(s[0]);else if(r=='doctor')G.pk.save.push(s[0]);else if(r=='crazy')G.pk.tea.push({t:s[0],g:G.tea});
+else if(r=='officer')G.res=pn(s[0])+(G.roles[s[0]]=='mafia'?' is mafia.':' is not mafia.');
+if(!G.res)A.skip()},
+skip(){G.si++;if(G.si>=G.st.length)return resolve();nx0()},
+cont(){G.ph=G.nx=='over'?'over':G.nx=='day'?'day':'nint';if(G.nx=='day'){G.sel=[];G.need=1}if(G.nx=='night')G.n++},
+elim(){const s=G.sel;if(!s.length)return fin('Nobody was voted out.','night');const x=die(new Set(s));fin(pn(s[0])+' was voted out.'+(x.length?' '+nm(x)+' died of a broken heart.':''),'night')},
+none(){fin('Nobody was voted out.','night')},
+rev(){G.ph='ans'}
+};
+const dk=()=>{const t=document.documentElement.dataset.theme;return t?t=='dark':matchMedia('(prefers-color-scheme:dark)').matches};
+const back=v=>`<button class="s" data-a="go" data-v="${v}">Back</button>`;
+function R(){let h='';
+if(view=='home')h=`<h1>Pick a game</h1><p>Pass one phone around the group. The app acts as narrator.</p><button class="card big" data-a="go" data-v="ms"><strong>Mafia</strong><span>Hidden roles, secret nights, daytime votes.</span></button><button class="card big" data-a="go" data-v="is"><strong>Imposter</strong><span>Everyone gets the same word except one.</span></button>`;
+else if(view=='ms'){const e=mErr(),n=M.p-RK.reduce((t,k)=>t+M.c[k],0);
+h=`<h2>Mafia</h2><p>Set up the game.</p><div class="card"><div class="row"><b>Total players</b>${sp('mc','p',M.p,'players')}</div>`+RK.map(k=>`<div class="row"><div><b>${RN[k]}</b></div>${sp('mc',k,M.c[k],RN[k])}</div>`).join('')+`<div class="row"><div><b>Innocent</b><small>Fills the remaining seats</small></div><span class="res">${Math.max(n,0)}</span></div></div>${e?`<p class="err">${e}</p>`:''}<button class="b" data-a="ms" ${e?'disabled':''}>Start game</button>${back('home')}`}
+else if(view=='is'){const any=Object.values(I.g).some(Boolean);
+h=`<h2>Imposter</h2><p>Set up the round.</p><div class="card"><div class="row"><b>Total players</b>${sp('ip','p',I.p,'players')}</div></div><div class="card"><b>Word genres</b><div class="chips">`+Object.keys(GN).map(k=>`<button class="chip${I.g[k]?' on':''}" aria-pressed="${!!I.g[k]}" data-a="tg" data-k="${k}">${GN[k]}</button>`).join('')+`</div><div class="row"><div><b>Hint for the imposter</b><small>One vague word</small></div><button class="chip${I.h?' on':''}" aria-pressed="${!!I.h}" data-a="ht">${I.h?'On':'Off'}</button></div></div>${any?'':'<p class="err">Select at least one genre.</p>'}<button class="b" data-a="is" ${any?'':'disabled'}>Start round</button>${back('home')}`}
+else if(view=='mg')h=mg();else h=ig();
+$('m').innerHTML=h;$('th').textContent=dk()?'Light mode':'Dark mode'}
+function deal(role,sub){return G.show?`<div class="card reveal"><p>${pn(G.i)}</p>${role}</div><button class="b" data-a="nxt">Hide and pass on</button>`:`<div class="card reveal"><h2>${pn(G.i)}</h2><p>Take the phone. Make sure nobody else can see the screen.</p></div><button class="b" data-a="rv">Tap to reveal</button>`}
+function mg(){const p=G.ph;
+if(p=='deal'){const r=G.roles[G.i];return deal(`<div class="word">${RN[r]}</div><p>${RD[r]}</p>`)}
+if(p=='nint')return `<div class="card reveal"><h2>Night ${G.n}</h2><p>Everyone close your eyes. The narrator keeps the phone from here.</p></div><button class="b" data-a="nb">Start night</button>`;
+if(p=='step'){const r=G.st[G.si],d=SD[r];
+if(G.res)return `<div class="card reveal"><h2>${d[0]}</h2><p class="res">${G.res}</p></div><button class="b" data-a="skip">Done, continue</button>`;
+const ready=G.sel.length==G.need&&(r!='crazy'||G.tea!=null);
+return `<h2>Wake the ${d[0]}</h2><p>Ask them to open their eyes and ${d[1]} Tap their choice, then ask them to close their eyes.</p>${grid()}`+(r=='crazy'?`<div class="chips"><button class="chip${G.tea===true?' on':''}" data-a="tea" data-v="1">Good tea (protects)</button><button class="chip${G.tea===false?' on':''}" data-a="tea" data-v="0">Bad tea (kills)</button></div>`:'')+`<button class="b" data-a="ok" ${ready?'':'disabled'}>Confirm</button><button class="s" data-a="skip">Skip, nobody acts</button><p class="tag mt">Step ${G.si+1} of ${G.st.length}. If that role is dead, skip it and act normally so nobody can tell.</p>`}
+if(p=='msg')return `<div class="card reveal"><h2>${G.nx=='day'?'Morning':'Result'}</h2><p class="res">${G.msg}</p>${G.win?`<h2>${G.win}</h2>`:''}</div><button class="b" data-a="cont">${G.win?'See all roles':'Continue'}</button>`;
+if(p=='day'){return `<h2>Day ${G.n}</h2><p>${G.alive.filter(Boolean).length} players are alive. Discuss in person, then vote. Tap the player who was voted out.</p>${grid()}<button class="b" data-a="elim" ${G.sel.length?'':'disabled'}>Eliminate player</button><button class="s" data-a="none">Nobody was voted out</button>`}
+if(p=='over')return `<h2>${G.win}</h2><p>Final roles.</p><div class="card">`+G.roles.map((r,i)=>`<div class="row"><b>${pn(i)}</b><span>${RN[r]}${G.alive[i]?'':' <span class="tag">(out)</span>'}</span></div>`).join('')+`</div><button class="b" data-a="ms">Play again with same settings</button><button class="s" data-a="go" data-v="ms">Change settings</button><button class="s" data-a="go" data-v="home">Main menu</button>`}
+function ig(){const p=G.ph;
+if(p=='deal'){const imp=G.i==G.imp;return deal(imp?`<div class="word">You are the imposter</div><p>${I.h?'Your hint: <b>'+G.h+'</b>':'You get no hint.'}</p>`:`<p>The word is</p><div class="word">${G.w}</div>`)}
+if(p=='play')return `<div class="card reveal"><h2>Everyone is ready</h2><p>Take turns giving one clue each about the word. ${pn(G.first)} goes first. Then vote on who the imposter is.</p></div><button class="b" data-a="rev">Reveal the answer</button>`;
+return `<div class="card reveal"><p>The imposter was</p><div class="word">${pn(G.imp)}</div><p>The word was <b>${G.w}</b></p></div><button class="b" data-a="is">Next round</button><button class="s" data-a="go" data-v="is">Change settings</button><button class="s" data-a="go" data-v="home">Main menu</button>`}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(A[a])A[a](el);window.scrollTo(0,0);R()});
+try{const t=localStorage.getItem('pg-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+R();
+</script>
+</body>
+</html>
