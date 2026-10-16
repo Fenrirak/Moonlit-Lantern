@@ -130,14 +130,62 @@ function fin(k,txt,rows,tl){G.win=chk();G.kind=k;G.txt=txt;G.rows=rows;G.tl=tl||
 function intro(){G.ph='intro';say('Night '+G.n+'. The village falls asleep.')}
 function day(){G.ph='day';G.sel=[];G.te=G.cfg.tm?Date.now()+G.cfg.tm*60000:0;G.tf=0}
 function done(){const t=G.lp.t;G.lp=null;if(t=='deal')intro();else if(t=='night')resolve();else if(t=='glance')day();else tally()}
+/* ---------- STORIES: edit the lines below. {w} = names, {was} = was/were, {has} = has/have ---------- */
+const ST={
+ "scene": [
+  "Last night everyone was at a party when screams echoed through the village.",
+  "The village woke up to a suspicious silence, a missing cake and some very bad news.",
+  "Last night the whole village was singing karaoke when the lights suddenly went out.",
+  "While everyone argued about pineapple on pizza, something sinister crept through the village.",
+  "Last night's moonlit barbecue took a dark turn when the sausages went cold and the tomato sauce was spilled.",
+  "Last night the village talent show was interrupted by a very rude noise from the dark.",
+  "Everyone was dreaming of sushi when a mysterious thud shook the neighbourhood.",
+  "A thick fog rolled in overnight, along with a smell of burnt toast and bad intentions."
+ ],
+ "death": [
+  "{w} {was} found face down in the potato salad, and nobody is pretending it was an accident.",
+  "{w} slipped on a banana peel, and the banana peel definitely had help.",
+  "{w} lost a staring contest with a very serious shadow.",
+  "{w} fell off a cliff while taking a selfie, and the selfie came out surprisingly great.",
+  "{w} challenged a goose to a duel at midnight. The goose is doing fine.",
+  "{w} {was} last seen arguing with a vending machine. The vending machine won.",
+  "{w} tried to juggle flaming torches for the talent show. The audience was not impressed.",
+  "{w} {was} struck by a flying piano. Nobody knows who owns a piano that can fly.",
+  "{w} followed a suspicious cookie trail into the woods, and the cookies were not free."
+ ],
+ "save": [
+  "{w} drove off a cliff on the way home, but Santa was luckily flying by and caught the car mid-air!",
+  "{w} was about to be eaten by a bear, but a very brave Tūī distracted the bear with a flower!",
+  "{w} walked into a dark alley with a dangerous stranger, but a dirty banana peel sent the stranger flying!",
+  "{w} was chased by an angry mob of geese, but a friendly wizard turned them all into harmless ducks!",
+  "{w} bit into a poisoned pie, but a lucky hiccup launched it right back out!",
+  "{w} was tied to a railway track by a villain, but a wandering sheep chewed through the rope!"
+ ],
+ "none": [
+  "Nobody died last night. The mafia probably overslept, got lost, or were busy rehearsing a dance routine.",
+  "The village woke up to a miracle: no bodies, no screaming, and somebody even made pancakes.",
+  "Nobody was killed, though a very confused raccoon was seen wearing a tiny mafia hat.",
+  "Everyone survived the night. The mafia blamed bad Wi-Fi.",
+  "Dawn arrived and everybody is still alive. Suspiciously alive.",
+  "No deaths overnight. The mafia sat in the dark and awkwardly ate peanut butter."
+ ],
+ "heart": [
+  "Heartbroken, {w} died of sadness at the news, clutching a very small violin.",
+  "{w} could not live without the beloved and dramatically fainted into the afterlife.",
+  "The love story ended like a bad opera: {w} {has} also died of a broken heart.",
+  "Cupid's arrow strikes twice: {w} died of a broken heart while the violins hit every sad note."
+ ]
+};
+const pk=a=>a[rnd(a.length)],fill=(t,a)=>t.replace(/\{w\}/g,lst(a.map(i=>G.nm[i]))).replace('{was}',a.length>1?'were':'was').replace('{has}',a.length>1?'have':'has');
+function story(d,sv,x){if(!d.length&&!sv.length&&!x.length)return pk(ST.none);const pl=shuf(ST.save);return [pk(ST.scene),d.length?fill(pk(ST.death),d):'',...sv.map((i,j)=>fill(pl[j%pl.length],[i])),x.length?fill(pk(ST.heart),x):''].filter(Boolean).join(' ')}
 function resolve(){const R=G.roles,ent=Object.keys(G.acts).map(p=>[+p,G.acts[p]]),pr=new Set(),k=new Set();
 ent.forEach(([p,a])=>{if(R[p]=='cupid')G.lv.push(a.t);if(R[p]=='doctor'||(R[p]=='crazy'&&a.g))pr.add(a.t[0])});
 let kills=ent.filter(([p])=>R[p]=='mafia').map(([,a])=>a.t[0]);
 if(G.cfg.mk&&kills.length>1){const c={};kills.forEach(t=>c[t]=(c[t]||0)+1);const mx=Math.max(...Object.values(c)),top=Object.keys(c).filter(t=>c[t]==mx);kills=[+top[rnd(top.length)]]}
 kills.forEach(t=>{if(!pr.has(t))k.add(t)});
 ent.forEach(([p,a])=>{if(R[p]=='crazy'&&!a.g&&!pr.has(a.t[0]))k.add(a.t[0])});
-const d=[...k],x=die(k),n=a=>lst(a.map(i=>G.nm[i]));
-fin('night',(d.length?n(d)+(d.length>1?' were':' was')+' killed in the night.':'Nobody was killed in the night.')+(x.length?' '+n(x)+' died of a broken heart.':''),[...d.map(i=>[i,'Killed']),...x.map(i=>[i,'Broken heart'])])}
+const d=[...k],x=die(k),n=a=>lst(a.map(i=>G.nm[i]));const sv=[...new Set([...kills,...ent.filter(([p,q])=>R[p]=='crazy'&&!q.g).map(([,q])=>q.t[0])])].filter(t=>pr.has(t)&&!k.has(t)&&!x.includes(t));
+fin('night',story(d,sv,x),[...d.map(i=>[i,'Killed']),...x.map(i=>[i,'Broken heart'])])}
 function ban(s,why,tl){const x=die(new Set(s)),n=a=>lst(a.map(i=>G.nm[i]));
 fin('vote',s.length?n(s)+' was voted out.'+(x.length?' '+n(x)+' died of a broken heart.':''):why,[...s.map(i=>[i,'Voted out']),...x.map(i=>[i,'Broken heart'])],tl)}
 function tally(){const c={};let ab=0;Object.values(G.bal).forEach(t=>t<0?ab++:c[t]=(c[t]||0)+1);
@@ -149,7 +197,7 @@ G={nm:names(M.p),roles:shuf(r),alive:Array(M.p).fill(1),lv:[],n:1,acts:{},bal:{}
 /* ---------- imposter ---------- */
 function istart(){const pool=Object.keys(I.g).filter(k=>I.g[k]).flatMap(k=>W[k]);let f=pool.filter(x=>!I.used.includes(x));if(!f.length){I.used=[];f=pool}const w=f[rnd(f.length)];I.used.push(w);const[a,b]=w.split('|');G={w:a,h:b,hint:I.h,imp:rnd(I.p),i:0,show:0,ph:'deal',first:rnd(I.p),nm:names(I.p)};view='ig';Q=0;wl()}
 /* ---------- validation ---------- */
-const mErr=()=>{const s=RK.reduce((t,k)=>t+M.c[k],0);return s>M.p?'There are more roles than players.':M.c.mafia<1?'At least 1 mafia is needed.':M.c.mafia>=M.p-M.c.mafia?'Mafia would already match everyone else.':dupe(M.p)?'Each player needs a different name.':''};
+const mErr=()=>{if(M.c.cupid>1)M.c.cupid=1;const s=RK.reduce((t,k)=>t+M.c[k],0);return s>M.p?'There are more roles than players.':M.c.mafia<1?'At least 1 mafia is needed.':M.c.mafia>=M.p-M.c.mafia?'Mafia would already match everyone else.':dupe(M.p)?'Each player needs a different name.':''};
 const iErr=()=>!Object.values(I.g).some(Boolean)?'Select at least one genre.':dupe(I.p)?'Each player needs a different name.':'';
 function vld(){const e=view=='ms'?mErr():view=='is'?iErr():null;if(e!==null&&$('er')){$('er').textContent=e;$('sb').disabled=!!e}}
 /* ---------- actions ---------- */
@@ -157,7 +205,7 @@ const A={
 th(){const d=dk();document.documentElement.dataset.theme=d?'light':'dark';try{localStorage.setItem('pg-theme',d?'light':'dark')}catch(e){}},
 go(e){view=e.dataset.v;if(G.roles||G.w)endg()},
 rs(){const s=SV;SV=null;view=s.view;G=s.G;if(G.lp&&G.lp.s!='hand'){G.lp.s='hand';G.lp.sel=[];G.lp.tea=null;G.lp.r=null}G.show=0;wl()},
-mc(e){const k=e.dataset.k,d=+e.dataset.d;k=='p'?M.p=cl(M.p+d,3,20):M.c[k]=cl(M.c[k]+d,0,20)},
+mc(e){const k=e.dataset.k,d=+e.dataset.d;k=='p'?M.p=cl(M.p+d,3,20):M.c[k]=cl(M.c[k]+d,0,k=='cupid'?1:20)},
 mt(e){M.tm=cl(M.tm+ +e.dataset.d,0,15)},
 mo(e){M[e.dataset.k]=M[e.dataset.k]?0:1},
 ip(e){I.p=cl(I.p+ +e.dataset.d,3,20)},
@@ -221,7 +269,7 @@ if(p=='play')return `<div class="card reveal"><h2>Everyone is ready</h2><p>Take 
 return `<div class="card reveal"><p>The imposter was</p><div class="word">${E(G.imp)}</div><p>The word was <b>${esc(G.w)}</b></p></div><button class="b" data-a="is">Next round</button><button class="s" data-a="go" data-v="is">Change settings</button><button class="s" data-a="go" data-v="home">Main menu</button>`}
 function R(){if((view=='mg'||view=='ig')&&!G.ph)view='home';
 const gm=view=='mg'||view=='ig',nv=navf;navf=0;let h='';
-document.body.className=view=='mg'&&(G.ph=='intro'||(G.ph=='lap'&&G.lp.t=='night'))?'nt':'';
+document.body.className=dk()&&view=='mg'&&(G.ph=='intro'||(G.ph=='lap'&&G.lp.t=='night'))?'nt':'';
 if(gm&&Q)h=`<div class="card reveal"><h2>End this game?</h2><p>Your progress will be lost.</p></div><button class="b" data-a="qn">Keep playing</button><button class="s" data-a="qy">End game</button>`;
 else if(view=='home')h=`<h1>Pick a game</h1><p>Pass one phone around the group. The phone does the hosting.</p>`+(SV?`<button class="card big" data-a="rs"><strong>Resume ${SV.view=='mg'?'Mafia':'Imposter'}</strong><span>Pick up the game you left.</span></button>`:'')+`<button class="card big" data-a="go" data-v="ms"><strong>Mafia</strong><span>No host needed. The phone deals roles, runs the night, keeps time and counts the votes.</span></button><button class="card big" data-a="go" data-v="is"><strong>Imposter</strong><span>Everyone gets the same word except one.</span></button>`;
 else if(view=='ms'){const e=mErr(),n=M.p-RK.reduce((t,k)=>t+M.c[k],0);
