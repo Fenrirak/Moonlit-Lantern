@@ -105,10 +105,10 @@ const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),cl=(v
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 const lst=a=>a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
-const RK=['mafia','doctor','sheriff','crazy','cupid'];
-const RN={mafia:'Mafia',doctor:'Doctor',crazy:'Crazy Doctor',sheriff:'Sheriff',cupid:'Cupid',innocent:'Innocent'};
-const RI={mafia:'',doctor:'',crazy:'',sheriff:'',cupid:'',innocent:''};
-const RD={mafia:'Each night every mafia member kills one player of their own choosing. Stay hidden.',doctor:'Each night you save one player from the mafia. You may save yourself.',crazy:'Each night you give one player a tea and choose if it is good (protects them) or bad (kills them). A doctor can block a bad tea.',sheriff:'Each night you investigate one player and learn if they are mafia.',cupid:'On the first night you link two players as lovers. If one dies, the other dies too.',innocent:'You have no ability. Work out who the mafia are and vote them out.'};
+const RK=['mafia','doctor','sheriff','crazy','cupid','jester'];
+const RN={mafia:'Mafia',doctor:'Doctor',crazy:'Crazy Doctor',sheriff:'Sheriff',cupid:'Cupid',jester:'Jester',innocent:'Innocent'};
+const RI={mafia:'',doctor:'',crazy:'',sheriff:'',cupid:'',jester:'',innocent:''};
+const RD={mafia:'Each night every mafia member kills one player of their own choosing. Stay hidden.',doctor:'Each night you save one player from the mafia. You may save yourself.',crazy:'Each night you give one player a tea and choose if it is good (protects them) or bad (kills them). Each save cancels out one kill on the same player.',sheriff:'Each night you investigate one player and learn if they are mafia.',jester:'You have no night ability. Your goal is to get the group to vote you out. If you are voted out, the game ends and all jesters win.',cupid:'On the first night you link two players as lovers. If one dies, the other dies too.',innocent:'You have no ability. Work out who the mafia are and vote them out.'};
 const RDD='Each night the doctors save one player. Every doctor chooses a target and the most chosen one is saved. You may save yourself.';
 const RDM='Each night the mafia kill one player. Every member chooses a target and the most chosen one dies. Stay hidden.';
 const TASK={cupid:'Choose the two players who will fall in love. Nobody else will be told, so keep it secret.',mafia:'Choose one player to kill.',doctor:'Choose one player to save. You may save yourself.',crazy:'Choose one player to give a tea to, then decide if it is good or bad.',sheriff:'Choose one player to investigate.'};
@@ -123,7 +123,7 @@ hob:['Knitting|Wool','Fishing|Patience','Gardening|Soil','Photography|Lens','Cam
 drk:['Flat white|Coffee','Lemonade|Sour','Milkshake|Straw','Tea|Leaves','Hot chocolate|Marshmallow','Orange juice|Breakfast','Water|Thirsty','Cola|Fizzy','Smoothie|Blended','Beer|Hops','Wine|Grapes','L&P|Paeroa','Milo|Malty','Iced tea|Summer','Kombucha|Fermented','Energy drink|Caffeine'],
 cls:['Whiteboard|Marker','Backpack|Books','Recess|Break','Calculator|Maths','Detention|Trouble','Homework|Evening','Pencil case|Zip','Ruler|Straight','Scissors|Cut','Glue stick|Sticky','Globe|Spin','Timetable|Schedule','Exam|Nervous','Uniform|Matching','Bell|Ring','Textbook|Heavy']};
 const VOK=!!window.speechSynthesis;
-function rec(p){const m=Math.max(1,Math.min(Math.round(p/4),Math.ceil(p/2)-1));return{mafia:m,doctor:p>=3?Math.max(1,Math.round(p/6)):0,sheriff:p>=5?Math.max(1,Math.round(p/6)):0,cupid:p>=6?1:0,crazy:p>=5?1:0}}
+function rec(p){const m=Math.max(1,Math.min(Math.round(p/4),Math.ceil(p/2)-1));return{mafia:m,doctor:p>=3?Math.max(1,Math.round(p/6)):0,sheriff:p>=5?Math.max(1,Math.round(p/6)):0,cupid:p>=6?1:0,jester:p>=6?Math.floor(p/6):0,crazy:p>=5?1:0}}
 let view='home',Q=0,NM=[],M={p:5,c:rec(5),mf:1,mk:0,dh:0,sv:1,rv:0,tm:3,vo:1},I={p:5,g:{nz:1,obj:1,food:1,job:1,hob:1,drk:1,cls:1},h:1,used:[]},G={},SV=null,lastNav=0,navf=0,WL=null,AC=null;
 const pn=i=>(NM[i]||'').trim()||'Player '+(i+1);
 const names=p=>Array.from({length:p},(_,i)=>pn(i));
@@ -156,7 +156,7 @@ const top1=a=>{if(a.length<2)return a;const c={};a.forEach(t=>c[t]=(c[t]||0)+1);
 const lap=(t,o)=>{G.ph='lap';G.lp={t,o:o||alive(),k:0,s:'hand',sel:[],tea:null,r:null}};
 function chain(k){const x=[];let c=1;while(c){c=0;G.lv.forEach(([a,b])=>{[[a,b],[b,a]].forEach(([u,v])=>{if((k.has(u)||x.includes(u))&&!k.has(v)&&!x.includes(v)&&G.alive[v]){x.push(v);c=1}})})}return x}
 function die(k){const x=chain(k);[...k,...x].forEach(i=>G.alive[i]=0);return x}
-function chk(){let m=0,o=0;G.roles.forEach((r,i)=>{if(G.alive[i])r=='mafia'?m++:o++});return m==0?'Town wins':m>=o?'Mafia wins':''}
+function chk(){if(G.jw)return G.roles.filter(r=>r=='jester').length>1?'Jesters win':'Jester wins';let m=0,o=0;G.roles.forEach((r,i)=>{if(G.alive[i])r=='mafia'?m++:o++});return m==0?'Town wins':m>=o?'Mafia wins':''}
 function fin(k,txt,rows,tl){G.win=chk();G.kind=k;G.txt=txt;G.rows=rows;G.tl=tl||null;G.ph='msg';G.log.push((k=='night'?'Night ':'Day ')+G.n+': '+txt);say(txt+(G.win?' '+G.win+'.':''))}
 function intro(){G.ph='intro';say('Night '+G.n+'. The village falls asleep.')}
 function day(){G.ph='day';G.sel=[];G.te=G.cfg.tm?Date.now()+G.cfg.tm*60000:0;G.tf=0}
@@ -201,25 +201,29 @@ const ST={
   "No deaths overnight. The mafia sat in the dark and awkwardly ate peanut butter."
  ],
  "heart": [
-  "Heartbroken, {w} died of sadness at the news, clutching a very small violin.",
-  "{w} could not live without the beloved and dramatically fainted into the afterlife.",
-  "The love story ended like a bad opera: {w} {has} also died of a broken heart.",
-  "Cupid's arrow strikes twice: {w} died of a broken heart while the violins hit every sad note."
+  "Heartbroken at the loss of {b}, {w} died of sadness, clutching a very small violin.",
+  "{w} could not live without their beloved {b} and dramatically fainted into the afterlife.",
+  "The love story ended like a bad opera: {w} {has} also died of a broken heart, right after {b}.",
+  "Cupid's arrow strikes twice: {w} died of a broken heart over {b} while the violins hit every sad note."
  ]
 };
-const pk=a=>a[rnd(a.length)],fill=(t,a)=>t.replace(/\{w\}/g,lst(a.map(i=>G.nm[i]))).replace('{was}',a.length>1?'were':'was').replace('{has}',a.length>1?'have':'has');
-function story(d,sv,x){if(!d.length&&!sv.length&&!x.length)return pk(ST.none);const pl=shuf(ST.save);return [pk(ST.scene),d.length?fill(pk(ST.death),d):'',...sv.map((i,j)=>fill(pl[j%pl.length],[i])),x.length?fill(pk(ST.heart),x):''].filter(Boolean).join(' ')}
-function resolve(){const R=G.roles,ent=Object.keys(G.acts).map(p=>[+p,G.acts[p]]),pr=new Set(),k=new Set();
-ent.forEach(([p,a])=>{if(R[p]=='cupid')G.lv.push(a.t);if(R[p]=='crazy'&&a.g)pr.add(a.t[0])});
-let saves=ent.filter(([p])=>R[p]=='doctor').map(([,a])=>a.t[0]);if(G.cfg.dh)saves=top1(saves);saves.forEach(t=>pr.add(t));
+const LAST=new Map(),pk=a=>{let i=rnd(a.length);const l=LAST.get(a);if(a.length>1&&i===l)i=(i+1+rnd(a.length-1))%a.length;LAST.set(a,i);return a[i]},fill=(t,a,b)=>t.replace(/\{b\}/g,lst((b||[]).map(i=>G.nm[i]))).replace(/\{w\}/g,lst(a.map(i=>G.nm[i]))).replace('{was}',a.length>1?'were':'was').replace('{has}',a.length>1?'have':'has');
+const bel=(x,k)=>[...new Set(x.map(i=>{const l=lov(i);return l.find(j=>k.has(j))??l.find(j=>x.includes(j)&&j!=i)??l[0]}).filter(j=>j!=null))];
+function story(d,sv,x,b){if(!d.length&&!sv.length&&!x.length)return pk(ST.none);const pl=shuf(ST.save),ls=LAST.get(ST.save);if(pl.length>1&&pl[0]===ST.save[ls]){const t=pl[0];pl[0]=pl[pl.length-1];pl[pl.length-1]=t}if(sv.length)LAST.set(ST.save,ST.save.indexOf(pl[(sv.length-1)%pl.length]));return [pk(ST.scene),d.length?fill(pk(ST.death),d):'',...sv.map((i,j)=>fill(pl[j%pl.length],[i])),x.length?fill(pk(ST.heart),x,b):''].filter(Boolean).join(' ')}
+function resolve(){const R=G.roles,ent=Object.keys(G.acts).map(p=>[+p,G.acts[p]]),k=new Set();
+ent.forEach(([p,a])=>{if(R[p]=='cupid')G.lv.push(a.t)});
+let saves=ent.filter(([p])=>R[p]=='doctor').map(([,a])=>a.t[0]);if(G.cfg.dh)saves=top1(saves);
 let kills=ent.filter(([p])=>R[p]=='mafia').map(([,a])=>a.t[0]);
 if(G.cfg.mk)kills=top1(kills);
-kills.forEach(t=>{if(!pr.has(t))k.add(t)});
-ent.forEach(([p,a])=>{if(R[p]=='crazy'&&!a.g&&!pr.has(a.t[0]))k.add(a.t[0])});
-const d=[...k],x=die(k),n=a=>lst(a.map(i=>G.nm[i]));const sv=[...new Set([...kills,...ent.filter(([p,q])=>R[p]=='crazy'&&!q.g).map(([,q])=>q.t[0])])].filter(t=>pr.has(t)&&!k.has(t)&&!x.includes(t));
-fin('night',story(d,sv,x),[...d.map(i=>[i,'Killed']),...x.map(i=>[i,'Broken heart'])])}
-function ban(s,why,tl){const x=die(new Set(s)),n=a=>lst(a.map(i=>G.nm[i]));
-fin('vote',s.length?n(s)+' was exiled out.'+(x.length?' '+n(x)+' died of a broken heart.':''):why,[...s.map(i=>[i,'Exiled out']),...x.map(i=>[i,'Broken heart'])],tl)}
+const kc={},sc={},ad=(m,t)=>m[t]=(m[t]||0)+1;
+saves.forEach(t=>ad(sc,t));kills.forEach(t=>ad(kc,t));
+ent.forEach(([p,a])=>{if(R[p]=='crazy')ad(a.g?sc:kc,a.t[0])});
+Object.keys(kc).forEach(t=>{if(kc[t]>(sc[t]||0))k.add(+t)});
+const d=[...k],x=die(k),n=a=>lst(a.map(i=>G.nm[i]));const sv=Object.keys(kc).map(Number).filter(t=>!k.has(t)&&!x.includes(t));
+const b=bel(x,k);
+fin('night',story(d,sv,x,b),[...d.map(i=>[i,'Killed']),...x.map(i=>[i,'Broken heart'])])}
+function ban(s,why,tl){const k=new Set(s),x=die(k),n=a=>lst(a.map(i=>G.nm[i])),b=bel(x,k);if(s.some(i=>G.roles[i]=='jester'))G.jw=1;
+fin('vote',s.length?n(s)+' was exiled out.'+(G.jw?' It was the Jester!':'')+(x.length?' '+n(x)+' died of a broken heart, unable to live without their beloved '+n(b)+'.':''):why,[...s.map(i=>[i,'Exiled out']),...x.map(i=>[i,'Broken heart'])],tl)}
 function tally(){const c={};let ab=0;Object.values(G.bal).forEach(t=>t<0?ab++:c[t]=(c[t]||0)+1);
 const e=Object.entries(c).map(([i,n])=>[+i,n]).sort((a,b)=>b[1]-a[1]),top=e[0];let out=[],why='Everyone skipped the vote, so nobody was exiled out.';
 if(top){if(e[1]&&e[1][1]==top[1])why='The vote was tied, so nobody was exiled out.';else if(top[1]<=ab)why='Skipping got as many votes as the top suspect, so nobody was exiled out.';else out=[top[0]]}
