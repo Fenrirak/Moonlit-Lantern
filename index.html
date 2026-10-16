@@ -68,24 +68,42 @@ ol{color:var(--mu);padding-left:20px;margin:8px 0}li{margin-bottom:6px}
 main:focus{outline:none}
 @media(prefers-reduced-motion:no-preference){main.fi>*{animation:fi .28s ease both}}
 @keyframes fi{from{opacity:0;transform:translateY(8px)}}
+footer{margin-top:36px;padding:28px 0 8px;border-top:1px solid var(--bd);text-align:center}
+footer:empty{display:none}
+.fb{font:600 26px Georgia,"Times New Roman",serif;color:var(--ac);margin-bottom:8px}
+.fn{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 8px;margin-bottom:10px}
+.fn a,.fn button{background:none;border:0;color:var(--tx);font-weight:600;font-size:16px;min-height:44px;padding:8px 14px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center}
+.fn a:hover,.fn button:hover{color:var(--ac)}
+.fn a:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.fc{font-size:14px;color:var(--mu);margin:0}
+.lbs{display:grid;gap:10px;margin-top:16px}
+.lb{display:flex;align-items:center;justify-content:center;min-height:52px;padding:10px 16px;border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);font-weight:600;text-decoration:none;transition:transform .06s}
+.lb:active{transform:scale(.98)}
+.lb:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.lb.ac{background:var(--ac);color:var(--on);border-color:var(--ac)}
+.ab p{font-size:18px;line-height:1.65;color:var(--tx)}.ab p:last-child{margin:0}
+.doc h3{font-size:18px;margin:24px 0 6px;letter-spacing:-.01em}
+.doc p,.doc li{color:var(--tx);line-height:1.6}.doc ul{padding-left:20px;margin:6px 0 14px}
 </style>
 </head>
 <body>
 <div class="app">
 <header id="hd"></header>
 <main id="m" tabindex="-1"></main>
+<footer id="ft"></footer>
 </div>
 <script>
 const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 const lst=a=>a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
-const RK=['mafia','doctor','crazy','officer','cupid'];
-const RN={mafia:'Mafia',doctor:'Doctor',crazy:'Crazy Doctor',officer:'Officer',cupid:'Cupid',innocent:'Innocent'};
-const RI={mafia:'',doctor:'',crazy:'',officer:'',cupid:'',innocent:''};
-const RD={mafia:'Each night every mafia member kills one player of their own choosing. Stay hidden.',doctor:'Each night you save one player from the mafia. You may save yourself.',crazy:'Each night you give one player a tea and choose if it is good (protects them) or bad (kills them). A doctor can block a bad tea.',officer:'Each night you investigate one player and learn if they are mafia.',cupid:'On the first night you link two players as lovers. If one dies, the other dies too.',innocent:'You have no ability. Work out who the mafia are and vote them out.'};
+const RK=['mafia','doctor','sheriff','crazy','cupid'];
+const RN={mafia:'Mafia',doctor:'Doctor',crazy:'Crazy Doctor',sheriff:'Sheriff',cupid:'Cupid',innocent:'Innocent'};
+const RI={mafia:'',doctor:'',crazy:'',sheriff:'',cupid:'',innocent:''};
+const RD={mafia:'Each night every mafia member kills one player of their own choosing. Stay hidden.',doctor:'Each night you save one player from the mafia. You may save yourself.',crazy:'Each night you give one player a tea and choose if it is good (protects them) or bad (kills them). A doctor can block a bad tea.',sheriff:'Each night you investigate one player and learn if they are mafia.',cupid:'On the first night you link two players as lovers. If one dies, the other dies too.',innocent:'You have no ability. Work out who the mafia are and vote them out.'};
+const RDD='Each night the doctors save one player. Every doctor chooses a target and the most chosen one is saved. You may save yourself.';
 const RDM='Each night the mafia kill one player. Every member chooses a target and the most chosen one dies. Stay hidden.';
-const TASK={cupid:'Choose the two players who will fall in love. Nobody else will be told, so keep it secret.',mafia:'Choose one player to kill.',doctor:'Choose one player to save. You may save yourself.',crazy:'Choose one player to give a tea to, then decide if it is good or bad.',officer:'Choose one player to investigate.'};
+const TASK={cupid:'Choose the two players who will fall in love. Nobody else will be told, so keep it secret.',mafia:'Choose one player to kill.',doctor:'Choose one player to save. You may save yourself.',crazy:'Choose one player to give a tea to, then decide if it is good or bad.',sheriff:'Choose one player to investigate.'};
 const DECOY='You have no power tonight. Tap anyone anyway, so nobody can tell who has a power.';
 const GN={nz:'NZ common facts',obj:'Objects',food:'Foods',ani:'Animals',pla:'Places'};
 const W={
@@ -95,14 +113,15 @@ food:['Pizza|Slice','Sushi|Rice','Pancakes|Breakfast','Banana|Yellow','Chocolate
 ani:['Elephant|Large','Penguin|Cold','Giraffe|Tall','Octopus|Ocean','Kangaroo|Australia','Owl|Night','Dolphin|Smart','Bat|Flying','Shark|Teeth','Camel|Desert','Koala|Sleepy','Hedgehog|Spiky','Rabbit|Fluffy','Frog|Pond','Tiger|Stripes','Horse|Ride'],
 pla:['Airport|Travel','Library|Quiet','Beach|Sand','Hospital|Doctors','School|Learning','Supermarket|Shopping','Zoo|Visit','Cinema|Dark','Museum|History','Bakery|Smell','Gym|Sweat','Farm|Rural','Lighthouse|Coast','Castle|Old','Volcano|Hot','Playground|Kids']};
 const VOK=!!window.speechSynthesis;
-let view='home',Q=0,NM=[],M={p:6,c:{mafia:1,doctor:1,crazy:1,officer:1,cupid:1},mf:1,mk:0,sv:1,rv:0,tm:3,vo:1},I={p:5,g:{nz:1,obj:1,food:1,ani:1,pla:1},h:1,used:[]},G={},SV=null,lastNav=0,navf=0,WL=null,AC=null;
+function rec(p){const m=Math.max(1,Math.min(Math.round(p/4),Math.ceil(p/2)-1));return{mafia:m,doctor:p>=3?Math.max(1,Math.round(p/6)):0,sheriff:p>=5?Math.max(1,Math.round(p/6)):0,cupid:p>=6?1:0,crazy:p>=5?1:0}}
+let view='home',Q=0,NM=[],M={p:5,c:rec(5),mf:1,mk:0,dh:0,sv:1,rv:0,tm:3,vo:1},I={p:5,g:{nz:1,obj:1,food:1,ani:1,pla:1},h:1,used:[]},G={},SV=null,lastNav=0,navf=0,WL=null,AC=null;
 const pn=i=>(NM[i]||'').trim()||'Player '+(i+1);
 const names=p=>Array.from({length:p},(_,i)=>pn(i));
 const dupe=p=>new Set(names(p).map(n=>n.toLowerCase())).size<p;
 const E=i=>esc(G.nm[i]);
 const store=()=>{try{localStorage.setItem('ml-s',JSON.stringify({NM,M,I}));if(view=='mg'||view=='ig')localStorage.setItem('ml-g',JSON.stringify({view,G}))}catch(e){}};
-try{const s=JSON.parse(localStorage.getItem('ml-s')||'null');if(s){NM=Array.isArray(s.NM)?s.NM:[];if(s.M)Object.assign(M,s.M);if(s.I)Object.assign(I,s.I)}
-const g=JSON.parse(localStorage.getItem('ml-g')||'null');if(g&&g.G&&g.G.ph&&(g.view=='mg'||g.view=='ig'))SV=g;
+try{const s=JSON.parse(localStorage.getItem('ml-s')||'null');if(s){NM=Array.isArray(s.NM)?s.NM:[];if(s.M)Object.assign(M,s.M);if(s.I)Object.assign(I,s.I);if(M.c){if(M.c.officer!=null){M.c.sheriff=M.c.officer;delete M.c.officer}if(M.c.sheriff==null)M.c.sheriff=0}}
+const g=JSON.parse(localStorage.getItem('ml-g')||'null');if(g&&g.G&&g.G.roles)g.G.roles=g.G.roles.map(x=>x=='officer'?'sheriff':x);if(g&&g.G&&g.G.ph&&(g.view=='mg'||g.view=='ig'))SV=g;
 const t=localStorage.getItem('pg-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
 const dk=()=>{const t=document.documentElement.dataset.theme;return t?t=='dark':!!(window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches)};
 /* ---------- phone-as-host helpers: voice, alarm, wake lock ---------- */
@@ -119,9 +138,11 @@ const T=()=>G.ph=='lap'?G.lp:G;
 const lov=p=>G.lv.flatMap(([a,b])=>a==p?[b]:b==p?[a]:[]);
 const mates=p=>G.cfg.mf&&G.roles[p]=='mafia'?G.roles.map((r,i)=>r=='mafia'&&i!=p&&G.alive[i]?i:-1).filter(i=>i>=0):[];
 const nmz=a=>lst(a.map(i=>i<0?'Skip':G.nm[i]));
-const acts=p=>{const r=G.roles[p];return r=='mafia'||r=='doctor'||r=='crazy'||r=='officer'||(r=='cupid'&&G.n==1)};
+const acts=p=>{const r=G.roles[p];return r=='mafia'||r=='doctor'||r=='crazy'||r=='sheriff'||(r=='cupid'&&G.n==1)};
 const ned=()=>{if(G.ph!='lap')return 1;const L=G.lp;return L.t=='night'&&G.roles[L.o[L.k]]=='cupid'&&G.n==1?2:1};
-const task=r=>r=='mafia'&&G.cfg.mk?'Choose who to kill. If several mafia choose differently, the most chosen target dies.':TASK[r];
+const task=r=>r=='doctor'&&G.cfg.dh?'Choose one player to save. If several doctors choose differently, the most chosen player is saved. You may save yourself.':r=='mafia'&&G.cfg.mk?'Choose who to kill. If several mafia choose differently, the most chosen target dies.':TASK[r];
+const prior=(p,r)=>{const L=G.lp,o=[];if(L.t!='night'||!['doctor','crazy','sheriff'].includes(r))return o;for(let j=0;j<L.k;j++){const q=L.o[j],a=G.acts[q];if(G.roles[q]!=r||!a)continue;const w=G.nm[q],t=G.nm[a.t[0]];o.push(r=='sheriff'?w+' investigated '+t+': '+(G.roles[a.t[0]]=='mafia'?'mafia.':'not mafia.'):r=='doctor'?w+' is saving '+t+'.':w+' gave '+t+' a '+(a.g?'good':'bad')+' tea.')}return o};
+const top1=a=>{if(a.length<2)return a;const c={};a.forEach(t=>c[t]=(c[t]||0)+1);const mx=Math.max(...Object.values(c)),tp=Object.keys(c).filter(t=>c[t]==mx);return[+tp[rnd(tp.length)]]};
 const lap=(t,o)=>{G.ph='lap';G.lp={t,o:o||alive(),k:0,s:'hand',sel:[],tea:null,r:null}};
 function chain(k){const x=[];let c=1;while(c){c=0;G.lv.forEach(([a,b])=>{[[a,b],[b,a]].forEach(([u,v])=>{if((k.has(u)||x.includes(u))&&!k.has(v)&&!x.includes(v)&&G.alive[v]){x.push(v);c=1}})})}return x}
 function die(k){const x=chain(k);[...k,...x].forEach(i=>G.alive[i]=0);return x}
@@ -179,9 +200,10 @@ const ST={
 const pk=a=>a[rnd(a.length)],fill=(t,a)=>t.replace(/\{w\}/g,lst(a.map(i=>G.nm[i]))).replace('{was}',a.length>1?'were':'was').replace('{has}',a.length>1?'have':'has');
 function story(d,sv,x){if(!d.length&&!sv.length&&!x.length)return pk(ST.none);const pl=shuf(ST.save);return [pk(ST.scene),d.length?fill(pk(ST.death),d):'',...sv.map((i,j)=>fill(pl[j%pl.length],[i])),x.length?fill(pk(ST.heart),x):''].filter(Boolean).join(' ')}
 function resolve(){const R=G.roles,ent=Object.keys(G.acts).map(p=>[+p,G.acts[p]]),pr=new Set(),k=new Set();
-ent.forEach(([p,a])=>{if(R[p]=='cupid')G.lv.push(a.t);if(R[p]=='doctor'||(R[p]=='crazy'&&a.g))pr.add(a.t[0])});
+ent.forEach(([p,a])=>{if(R[p]=='cupid')G.lv.push(a.t);if(R[p]=='crazy'&&a.g)pr.add(a.t[0])});
+let saves=ent.filter(([p])=>R[p]=='doctor').map(([,a])=>a.t[0]);if(G.cfg.dh)saves=top1(saves);saves.forEach(t=>pr.add(t));
 let kills=ent.filter(([p])=>R[p]=='mafia').map(([,a])=>a.t[0]);
-if(G.cfg.mk&&kills.length>1){const c={};kills.forEach(t=>c[t]=(c[t]||0)+1);const mx=Math.max(...Object.values(c)),top=Object.keys(c).filter(t=>c[t]==mx);kills=[+top[rnd(top.length)]]}
+if(G.cfg.mk)kills=top1(kills);
 kills.forEach(t=>{if(!pr.has(t))k.add(t)});
 ent.forEach(([p,a])=>{if(R[p]=='crazy'&&!a.g&&!pr.has(a.t[0]))k.add(a.t[0])});
 const d=[...k],x=die(k),n=a=>lst(a.map(i=>G.nm[i]));const sv=[...new Set([...kills,...ent.filter(([p,q])=>R[p]=='crazy'&&!q.g).map(([,q])=>q.t[0])])].filter(t=>pr.has(t)&&!k.has(t)&&!x.includes(t));
@@ -193,7 +215,7 @@ const e=Object.entries(c).map(([i,n])=>[+i,n]).sort((a,b)=>b[1]-a[1]),top=e[0];l
 if(top){if(e[1]&&e[1][1]==top[1])why='The vote was tied, so nobody was exiled out.';else if(top[1]<=ab)why='Skipping got as many votes as the top suspect, so nobody was exiled out.';else out=[top[0]]}
 ban(out,why,[...e,...(ab?[[-1,ab]]:[])])}
 function start(){const r=[];for(const k of RK)for(let i=0;i<M.c[k];i++)r.push(k);while(r.length<M.p)r.push('innocent');
-G={nm:names(M.p),roles:shuf(r),alive:Array(M.p).fill(1),lv:[],n:1,acts:{},bal:{},log:[],sel:[],cfg:{mf:M.mf,mk:M.mk,sv:M.sv,rv:M.rv,tm:M.tm,vo:VOK?M.vo:0}};view='mg';Q=0;ac();wl();lap('deal',G.roles.map((_,i)=>i))}
+G={nm:names(M.p),roles:shuf(r),alive:Array(M.p).fill(1),lv:[],n:1,acts:{},bal:{},log:[],sel:[],cfg:{mf:M.mf,mk:M.mk,dh:M.dh,sv:M.sv,rv:M.rv,tm:M.tm,vo:VOK?M.vo:0}};view='mg';Q=0;ac();wl();lap('deal',G.roles.map((_,i)=>i))}
 /* ---------- imposter ---------- */
 function istart(){const pool=Object.keys(I.g).filter(k=>I.g[k]).flatMap(k=>W[k]);let f=pool.filter(x=>!I.used.includes(x));if(!f.length){I.used=[];f=pool}const w=f[rnd(f.length)];I.used.push(w);const[a,b]=w.split('|');G={w:a,h:b,hint:I.h,imp:rnd(I.p),i:0,show:0,ph:'deal',first:rnd(I.p),nm:names(I.p)};view='ig';Q=0;wl()}
 /* ---------- validation ---------- */
@@ -205,7 +227,7 @@ const A={
 th(){const d=dk();document.documentElement.dataset.theme=d?'light':'dark';try{localStorage.setItem('pg-theme',d?'light':'dark')}catch(e){}},
 go(e){view=e.dataset.v;if(G.roles||G.w)endg()},
 rs(){const s=SV;SV=null;view=s.view;G=s.G;if(G.lp&&G.lp.s!='hand'){G.lp.s='hand';G.lp.sel=[];G.lp.tea=null;G.lp.r=null}G.show=0;wl()},
-mc(e){const k=e.dataset.k,d=+e.dataset.d;k=='p'?M.p=cl(M.p+d,3,20):M.c[k]=cl(M.c[k]+d,0,k=='cupid'?1:20)},
+mc(e){const k=e.dataset.k,d=+e.dataset.d;if(k=='p'){M.p=cl(M.p+d,3,20);M.c=rec(M.p)}else{const t=RK.reduce((a,x)=>a+M.c[x],0);if(d>0&&t>=M.p)return;M.c[k]=cl(M.c[k]+d,0,k=='cupid'?1:20)}},
 mt(e){M.tm=cl(M.tm+ +e.dataset.d,0,15)},
 mo(e){M[e.dataset.k]=M[e.dataset.k]?0:1},
 ip(e){I.p=cl(I.p+ +e.dataset.d,3,20)},
@@ -221,7 +243,7 @@ ok(){const L=G.lp,p=L.o[L.k],r=G.roles[p],s=L.sel;
 if(L.t=='vote'){G.bal[p]=s[0];return A.nx()}
 let res='Your choice is locked in. Hide the screen and pass the phone on.';
 if(acts(p)){G.acts[p]={t:s.slice(),g:L.tea};
-if(r=='officer')res=G.nm[s[0]]+(G.roles[s[0]]=='mafia'?' is mafia.':' is not mafia.');
+if(r=='sheriff')res=G.nm[s[0]]+(G.roles[s[0]]=='mafia'?' is mafia.':' is not mafia.');
 if(r=='cupid')res='You linked '+nmz(s)+'. Nobody else will be told.'}
 L.r=res;L.s='res'},
 nx(){const L=G.lp;L.k++;L.s='hand';L.sel=[];L.tea=null;L.r=null;if(L.k>=L.o.length)done()},
@@ -236,7 +258,7 @@ nxt(){G.show=0;G.i++;if(G.i>=G.nm.length)G.ph='play'},
 rev(){G.ph='ans'}
 };
 /* ---------- views ---------- */
-const sp=(a,k,v,l)=>`<div class="st"><button aria-label="Decrease ${l}" data-a="${a}" data-k="${k}" data-d="-1">-</button><span>${v}</span><button aria-label="Increase ${l}" data-a="${a}" data-k="${k}" data-d="1">+</button></div>`;
+const sp=(a,k,v,l,x)=>`<div class="st"><button aria-label="Decrease ${l}" data-a="${a}" data-k="${k}" data-d="-1">-</button><span>${v}</span><button aria-label="Increase ${l}" data-a="${a}" data-k="${k}" data-d="1"${x?' disabled':''}>+</button></div>`;
 const back=v=>`<button class="s" data-a="go" data-v="${v}">Back</button>`;
 const pub=(ic,h,t,b,a)=>`<div class="card reveal"><div class="ic">${ic}</div><h2>${h}</h2><p>${t}</p></div><button class="b" data-a="${a}">${b}</button>`;
 const roster=p=>`<div class="card"><b>Players</b><p class="tag">Everyone has a player number. Remember yours: the phone always passes in number order (1, 2, 3 and so on), skipping anyone who is out. Names are optional.</p><div class="names">`+Array.from({length:p},(_,i)=>`<label class="nl"><b>${i+1}</b><input data-n="${i}" maxlength="16" autocomplete="off" autocapitalize="words" value="${esc(NM[i]||'')}" placeholder="Player ${i+1}" aria-label="Name for player number ${i+1}"></label>`).join('')+`</div></div>`;
@@ -246,12 +268,12 @@ const tmx=()=>{const r=Math.max(0,Math.ceil((G.te-Date.now())/1000));return Math
 function lp(){const L=G.lp,p=L.o[L.k],t=L.t,r=G.roles[p],s=L.sel;
 if(L.s=='hand')return `<div class="card reveal"><p class="tag">${{deal:'Dealing roles',night:'Night '+G.n,glance:'Dawn',vote:'Secret vote'}[t]} · turn ${L.k+1} of ${L.o.length}</p><p>Pass the phone to player ${p+1}</p><div class="word nm">${E(p)}</div><p>Next in number order. Everyone else, look away.</p></div><button class="b" data-a="hd">I am ${E(p)}, show my screen</button>`;
 const hide=`<button class="b" data-a="nx">Hide and pass on</button>`;
-if(t=='deal'){const m=mates(p);return `<div class="card reveal"><p>${E(p)}, you are</p><div class="ic">${RI[r]}</div><div class="word">${RN[r]}</div><p>${r=='mafia'&&G.cfg.mk?RDM:RD[r]}</p><p class="res">Your player number is ${p+1}. Remember it: the phone always passes in number order.</p>${m.length?`<p class="res">Your fellow mafia: ${esc(nmz(m))}</p>`:''}</div>`+hide}
+if(t=='deal'){const m=mates(p);return `<div class="card reveal"><p>${E(p)}, you are</p><div class="ic">${RI[r]}</div><div class="word">${RN[r]}</div><p>${r=='doctor'&&G.cfg.dh?RDD:r=='mafia'&&G.cfg.mk?RDM:RD[r]}</p><p class="res">Your player number is ${p+1}. Remember it: the phone always passes in number order.</p>${m.length?`<p class="res">Your fellow mafia: ${esc(nmz(m))}</p>`:''}</div>`+hide}
 if(t=='glance'){const l=lov(p);return `<div class="card reveal"><div class="ic">${l.length?'':''}</div><p class="res">${l.length?'You are in love with '+esc(nmz(l))+'. If one of you dies, the other dies of a broken heart.':'Your heart is quiet. You are not in love.'}</p></div>`+hide}
 if(t=='vote'){const rd=s.length==1;return `<h2>${E(p)}, cast your vote</h2><p>Who do you think is mafia? Your vote stays secret.</p>${grid(s,p,1)}<button class="b" data-a="ok" ${rd?'':'disabled'}>${rd?'Lock in: '+esc(nmz(s)):'Choose a player'}</button>`}
 if(L.s=='res')return `<div class="card reveal"><div class="ic">${RI[r]}</div><p class="res">${esc(L.r)}</p></div>`+hide;
-const n=ned(),real=acts(p),l=r=='cupid'&&G.lv.length?G.lv[0]:[],m=mates(p),rd=s.length==n&&(r!='crazy'||L.tea!=null||!real);
-return `<div class="card"><div class="rl"><span class="ic">${RI[r]}</span><div><small>${E(p)}, tonight you are</small><b>${RN[r]}</b></div></div><p>${real?task(r):DECOY}</p>${m.length?`<p class="res">Fellow mafia: ${esc(nmz(m))}</p>`:''}${l.length?`<p class="res"> You linked ${esc(nmz(l))}</p>`:''}</div>${grid(s,r=='mafia'?G.roles.map((x,i)=>x=='mafia'?i:-1):-2,0,p)}`+(r=='crazy'?`<div class="chips"><button class="chip${L.tea===true?' on':''}" data-a="tea" data-v="1">Good tea (protects)</button><button class="chip${L.tea===false?' on':''}" data-a="tea" data-v="0">Bad tea (kills)</button></div>`:'')+`<button class="b" data-a="ok" ${rd?'':'disabled'}>${rd?'Lock in: '+esc(nmz(s)):'Choose '+(n==2?'two players':'a player')}</button>`}
+const n=ned(),real=acts(p),l=r=='cupid'&&G.lv.length?G.lv[0]:[],m=mates(p),pri=prior(p,r),rd=s.length==n&&(r!='crazy'||L.tea!=null||!real);
+return `<div class="card"><div class="rl"><span class="ic">${RI[r]}</span><div><small>${E(p)}, tonight you are</small><b>${RN[r]}</b></div></div><p>${real?task(r):DECOY}</p>${m.length?`<p class="res">Fellow mafia: ${esc(nmz(m))}</p>`:''}${l.length?`<p class="res"> You linked ${esc(nmz(l))}</p>`:''}${pri.length?'<p class="tag">Earlier tonight</p><p class="res">'+pri.map(esc).join('<br>')+'</p>':''}</div>${grid(s,r=='mafia'?G.roles.map((x,i)=>x=='mafia'?i:-1):-2,0,p)}`+(r=='crazy'?`<div class="chips"><button class="chip${L.tea===true?' on':''}" data-a="tea" data-v="1">Good tea (protects)</button><button class="chip${L.tea===false?' on':''}" data-a="tea" data-v="0">Bad tea (kills)</button></div>`:'')+`<button class="b" data-a="ok" ${rd?'':'disabled'}>${rd?'Lock in: '+esc(nmz(s)):'Choose '+(n==2?'two players':'a player')}</button>`}
 function mg(){const p=G.ph;
 if(p=='lap')return lp();
 if(p=='intro')return pub('','Night '+G.n,'The village falls asleep. The phone visits every living player in number order (1, 2, 3 and so on), skipping anyone who is out, so know your number. Everyone takes the same taps at the same pace, whether or not they hold a power, so nobody can tell who does.','Begin the night','nb');
@@ -267,18 +289,32 @@ function ig(){const p=G.ph;
 if(p=='deal')return ideal(G.i==G.imp?`<div class="word">You are the imposter</div><p>${G.hint?'Your hint: <b>'+esc(G.h)+'</b>':'You get no hint.'}</p>`:`<p>The word is</p><div class="word">${esc(G.w)}</div>`);
 if(p=='play')return `<div class="card reveal"><h2>Everyone is ready</h2><p>Take turns giving one clue each about the word. ${E(G.first)} goes first. Then vote on who the imposter is.</p></div><button class="b" data-a="rev">Reveal the answer</button>`;
 return `<div class="card reveal"><p>The imposter was</p><div class="word">${E(G.imp)}</div><p>The word was <b>${esc(G.w)}</b></p></div><button class="b" data-a="is">Next round</button><button class="s" data-a="go" data-v="is">Change settings</button><button class="s" data-a="go" data-v="home">Main menu</button>`}
+const MAIL='Fenrirak.guy@gmail.com';
+const ftr=()=>`<div class="fb">Moonlit Lantern</div><nav class="fn" aria-label="Footer"><button data-a="go" data-v="ab">About</button><a href="mailto:${MAIL}">Contact</a><button data-a="go" data-v="pv">Privacy Policy</button></nav><p class="fc">&copy; 2026 Moonlit Lantern. Made in New Zealand.</p>`;
+const aboutV=()=>`<h1>Hi there, I'm Nathan</h1><div class="ab"><p>I made this website as part of an ongoing project to create good quality, completely free websites that everyone can use.</p><p>If you enjoy Moonlit Lantern, I would love for you to check out my other websites below.</p></div><div class="lbs"><a class="lb" href="https://legend-of-fenrirak.com" target="_blank" rel="noopener noreferrer">Legend of Fenrirak</a><a class="lb" href="https://fenrirak.github.io/The-29-World/index.html" target="_blank" rel="noopener noreferrer">The 29 World</a><a class="lb ac" href="https://buymeacoffee.com/29world" target="_blank" rel="noopener noreferrer">Support the creator</a></div>${back('home')}`;
+const privV=()=>`<h1>Privacy Policy</h1><p class="tag">Last updated 16 October 2026</p><div class="card doc"><p>Moonlit Lantern runs entirely in your web browser. I do not collect, store, sell or share any personal information. There are no accounts, no ads, no analytics and no tracking.</p>
+<h3>What is saved on your device</h3><p>To make the game work, the site saves a few things in your browser's local storage:</p><ul><li>Player names and game settings, such as the number of players, roles, rules, timer length and narrator choice.</li><li>Your light or dark mode choice.</li><li>A game in progress, including roles, who is still in, and night choices, so a game survives a page refresh.</li></ul><p>This information stays on your device and is never sent to me or anyone else. A saved game is deleted when you end the game. Names, settings and your theme stay until you clear this site's data in your browser settings.</p>
+<h3>Device features</h3><ul><li>The optional voice narrator uses your browser's built-in speech feature. Some browsers and devices may use an online voice service to produce speech, which I do not control. You can turn the narrator off in the Mafia setup screen.</li><li>The screen is kept awake during a game so the phone does not lock between turns.</li><li>The phone may beep and vibrate when the discussion timer ends.</li></ul><p>The site never asks for your camera, microphone or location.</p>
+<h3>What I do not collect</h3><p>This site does not set cookies, load third-party scripts, fonts or images, or send any data to a server. All words, roles and stories are built into the page.</p>
+<h3>Hosting</h3><p>The site is hosted on GitHub Pages. GitHub may process technical information such as your IP address when you load the page, under its own privacy statement. I do not receive or have access to that information.</p>
+<h3>Links to other sites</h3><p>The About page links to my other websites and to Buy Me a Coffee. Those sites have their own privacy practices, which I do not control.</p>
+<h3>Children</h3><p>Because no personal information is collected from anyone, nothing is collected from children either.</p>
+<h3>Changes</h3><p>If this policy changes, the date at the top will be updated.</p>
+<h3>Contact</h3><p>Questions about this policy can be sent to <a href="mailto:${MAIL}">${MAIL}</a>.</p></div>${back('home')}`;
 function R(){if((view=='mg'||view=='ig')&&!G.ph)view='home';
 const gm=view=='mg'||view=='ig',nv=navf;navf=0;let h='';
 document.body.className=dk()&&view=='mg'&&(G.ph=='intro'||(G.ph=='lap'&&G.lp.t=='night'))?'nt':'';
 if(gm&&Q)h=`<div class="card reveal"><h2>End this game?</h2><p>Your progress will be lost.</p></div><button class="b" data-a="qn">Keep playing</button><button class="s" data-a="qy">End game</button>`;
 else if(view=='home')h=`<h1>Pick a game</h1><p>Pass one phone around the group. The phone does the hosting.</p>`+(SV?`<button class="card big" data-a="rs"><strong>Resume ${SV.view=='mg'?'Mafia':'Imposter'}</strong><span>Pick up the game you left.</span></button>`:'')+`<button class="card big" data-a="go" data-v="ms"><strong>Mafia</strong><span>No host needed. The phone deals roles, runs the night, keeps time and counts the votes.</span></button><button class="card big" data-a="go" data-v="is"><strong>Imposter</strong><span>Everyone gets the same word except one.</span></button>`;
 else if(view=='ms'){const e=mErr(),n=M.p-RK.reduce((t,k)=>t+M.c[k],0);
-h=`<h2>Mafia</h2><p>No host needed. The phone is your narrator.</p><div class="card"><div class="row"><b>Total players</b>${sp('mc','p',M.p,'players')}</div>`+RK.map(k=>`<div class="row"><div><b>${RN[k]}</b></div>${sp('mc',k,M.c[k],RN[k])}</div>`).join('')+`<div class="row"><div><b>Innocent</b><small>Fills the remaining seats</small></div><span class="res">${Math.max(n,0)}</span></div></div>`+roster(M.p)+`<div class="card"><b>Rules</b>`+opt('mf','Mafia know each other','Shown on their screens','On','Off')+opt('mk','Mafia kills','One kill per night, or one per member','One kill','Each member')+opt('sv','Voting','Secret ballot on the phone, or the group decides','Secret','Group')+opt('rv','Reveal roles when out','Show the role of anyone eliminated','On','Off')+`<div class="row"><div><b>Day discussion timer</b><small>Minutes, with an alarm. 0 is off</small></div>${sp('mt','tm',M.tm?M.tm+' min':'Off','timer')}</div>`+(VOK?opt('vo','Voice narrator','The phone reads public announcements aloud','On','Off'):'')+`</div><details><summary>How a host-free game works</summary><ol><li>The phone deals each person a role in private, one at a time.</li><li>At night it visits every living player in number order, so everyone must remember their player number. Everyone taps through the same screens, even innocents, so nobody can tell who has a power.</li><li>In the morning the phone announces what happened, and a timer runs the discussion.</li><li>Everyone votes in secret on the phone. It counts the ballots and checks who has won.</li></ol></details><p class="err" id="er">${e}</p><button class="b" id="sb" data-a="ms" ${e?'disabled':''}>Start game</button>${back('home')}`}
+h=`<h2>Mafia</h2><p>No host needed. The phone is your narrator.</p><div class="card"><div class="row"><b>Total players</b>${sp('mc','p',M.p,'players')}</div>`+RK.map(k=>`<div class="row"><div><b>${RN[k]}</b></div>${sp('mc',k,M.c[k],RN[k],n<=0||(k=='cupid'&&M.c[k]>=1))}</div>`).join('')+`<div class="row"><div><b>Innocent</b><small>Fills the remaining seats</small></div><span class="res">${Math.max(n,0)}</span></div></div>`+roster(M.p)+`<div class="card"><b>Rules</b>`+opt('mf','Mafia know each other','Shown on their screens','On','Off')+opt('mk','Mafia kills','One kill per night, or one per member','One kill','Each member')+opt('dh','Doctor saves','One save per night, or one per doctor','One save','Each doctor')+opt('sv','Voting','Secret ballot on the phone, or the group decides','Secret','Group')+opt('rv','Reveal roles when out','Show the role of anyone eliminated','On','Off')+`<div class="row"><div><b>Day discussion timer</b><small>Minutes, with an alarm. 0 is off</small></div>${sp('mt','tm',M.tm?M.tm+' min':'Off','timer')}</div>`+(VOK?opt('vo','Voice narrator','The phone reads public announcements aloud','On','Off'):'')+`</div><details><summary>How a host-free game works</summary><ol><li>The phone deals each person a role in private, one at a time.</li><li>At night it visits every living player in number order, so everyone must remember their player number. Everyone taps through the same screens, even innocents, so nobody can tell who has a power.</li><li>In the morning the phone announces what happened, and a timer runs the discussion.</li><li>Everyone votes in secret on the phone. It counts the ballots and checks who has won.</li></ol></details><p class="err" id="er">${e}</p><button class="b" id="sb" data-a="ms" ${e?'disabled':''}>Start game</button>${back('home')}`}
 else if(view=='is'){const e=iErr();
 h=`<h2>Imposter</h2><p>Set up the round.</p><div class="card"><div class="row"><b>Total players</b>${sp('ip','p',I.p,'players')}</div></div>`+roster(I.p)+`<div class="card"><b>Word genres</b><div class="chips">`+Object.keys(GN).map(k=>`<button class="chip${I.g[k]?' on':''}" aria-pressed="${!!I.g[k]}" data-a="tg" data-k="${k}">${GN[k]}</button>`).join('')+`</div><div class="row"><div><b>Hint for the imposter</b><small>One vague word</small></div><button class="chip${I.h?' on':''}" aria-pressed="${!!I.h}" data-a="ht">${I.h?'On':'Off'}</button></div></div><p class="err" id="er">${e}</p><button class="b" id="sb" data-a="is" ${e?'disabled':''}>Start round</button>${back('home')}`}
+else if(view=='ab')h=aboutV();
+else if(view=='pv')h=privV();
 else h=view=='mg'?mg():ig();
 $('hd').innerHTML=`<b>Moonlit Lantern</b><span>${gm&&!Q?'<button class="lk" data-a="q">Quit</button>':''}<button class="lk" data-a="th">${dk()?'Light':'Dark'} mode</button></span>`;
-const m=$('m');m.className=nv?'fi':'';m.innerHTML=h;if(nv)m.focus({preventScroll:true});store()}
+$('ft').innerHTML=gm?'':ftr();const m=$('m');m.className=nv?'fi':'';m.innerHTML=h;if(nv)m.focus({preventScroll:true});store()}
 /* ---------- wiring ---------- */
 const sig=()=>[view,Q,G.ph,G.lp?G.lp.t+G.lp.k+G.lp.s:'',G.i,G.show].join('|');
 const SOFT=['th','mc','ip','tg','ht','mo','mt','tp'];
