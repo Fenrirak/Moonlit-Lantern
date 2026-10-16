@@ -131,7 +131,7 @@ function ig(){const p=G.ph;
 if(p=='deal'){const imp=G.i==G.imp;return deal(imp?`<div class="word">You are the imposter</div><p>${I.h?'Your hint: <b>'+G.h+'</b>':'You get no hint.'}</p>`:`<p>The word is</p><div class="word">${G.w}</div>`)}
 if(p=='play')return `<div class="card reveal"><h2>Everyone is ready</h2><p>Take turns giving one clue each about the word. ${pn(G.first)} goes first. Then vote on who the imposter is.</p></div><button class="b" data-a="rev">Reveal the answer</button>`;
 return `<div class="card reveal"><p>The imposter was</p><div class="word">${pn(G.imp)}</div><p>The word was <b>${G.w}</b></p></div><button class="b" data-a="is">Next round</button><button class="s" data-a="go" data-v="is">Change settings</button><button class="s" data-a="go" data-v="home">Main menu</button>`}
-document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(A[a])A[a](el);window.scrollTo(0,0);R()});
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(A[a])A[a](el);if(!['pick','tea','mc','ip','tg','ht','th'].includes(a))window.scrollTo(0,0);R()});
 try{const t=localStorage.getItem('pg-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
 R();
 </script>
