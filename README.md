@@ -2,6 +2,10 @@
 
 Pass-and-play party games for a single phone: Mafia and Imposter. One static file, no build step, no server.
 
+## Mafia with no human host
+
+The phone is the narrator. It deals roles privately, then runs each night by visiting every living player in seat order. Everyone taps through the same screens, even innocents (who get a decoy pick), so nobody can tell who holds a power. In the morning it announces what happened, runs a discussion timer with an alarm, collects secret ballots, counts them and checks who has won. Optional voice narration, player names, a group-decides voting mode and a one-kill-per-night mode are in the setup screen. A game in progress survives a page refresh.
+
 ## Put it online with GitHub Pages
 
 1. Create a new GitHub repository and upload `index.html`, `.nojekyll` and this `README.md`.
